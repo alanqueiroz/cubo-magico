@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Cubo Mágico 3D – Jogo Completo com Histórico de Resoluções</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cubo Mágico 3D – Jogo Completo Responsivo com Histórico de Resoluções</title>
   <style>
     /* Reset básico */
     * {
@@ -85,6 +86,30 @@
       margin-bottom: 5px;
       padding-bottom: 5px;
       border-bottom: 1px solid #eee;
+    }
+    /* Media Queries para responsividade */
+    @media (max-width: 480px) {
+      #ui {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        padding: 10px 15px;
+      }
+      #ui h1 {
+        font-size: 1.1rem;
+      }
+      #ui button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        margin-right: 5px;
+      }
+      #ui label {
+        font-size: 0.8rem;
+      }
+      #history {
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
@@ -229,7 +254,7 @@
       moveQueue.push(move);
     }
 
-    // Realiza um movimento usando um pivot (para evitar problemas de detach/attach)
+    // Realiza um movimento usando um pivot (evitando problemas de detach/attach)
     function performMove(move, onComplete) {
       const pivot = new THREE.Object3D();
       cubeGroup.add(pivot);
@@ -242,10 +267,8 @@
         pivot.add(cubie);
         cubie.position.copy(pivot.worldToLocal(worldPos.clone()));
       });
-
       const animationData = { progress: 0 };
       const duration = 0.3 / animationSpeed;
-
       gsap.to(animationData, {
         progress: 1,
         duration: duration,
@@ -304,10 +327,9 @@
       }
     }
 
-    // Inicia a resolução: registra o tempo inicial, quantidade de movimentos e ativa a flag
+    // Inicia a resolução: registra tempo e quantidade de movimentos, depois chama solveCube()
     function initiateSolve() {
       if (isAnimating || isSolving) return;
-      // Registra os dados antes de chamar solveCube()
       solveStartTime = performance.now();
       currentScrambleCount = scrambleHistory.length;
       isSolving = true;
@@ -318,20 +340,18 @@
           clearInterval(checkInterval);
           const solveEndTime = performance.now();
           const elapsedTime = ((solveEndTime - solveStartTime) / 1000).toFixed(2);
-          // Registra o evento no histórico
           addResolutionHistory({
             date: new Date().toLocaleString(),
             scrambleCount: currentScrambleCount,
             elapsedTime: elapsedTime
           });
-          // Limpa o histórico de embaralhamento e reseta a flag
           scrambleHistory = [];
           isSolving = false;
         }
       }, 100);
     }
 
-    // "Resolve" o cubo enfileirando os movimentos inversos (a partir do histórico)
+    // "Resolve" o cubo enfileirando os movimentos inversos
     function solveCube() {
       const reverseMoves = [];
       for (let i = scrambleHistory.length - 1; i >= 0; i--) {
@@ -344,14 +364,11 @@
           enqueueMove(MOVES[key]);
         }
       });
-      // Limpa o histórico de embaralhamento após enfileirar os movimentos
-      // (o registro já foi feito em initiateSolve)
       scrambleHistory = [];
     }
 
-    // Adiciona um registro no histórico e atualiza a área de histórico
+    // Adiciona um registro ao histórico e atualiza a área de exibição
     function addResolutionHistory(record) {
-      // Mantém somente os 10 últimos registros
       resolutionHistory.push(record);
       if (resolutionHistory.length > 10) {
         resolutionHistory.shift();
@@ -359,7 +376,6 @@
       updateHistoryDisplay();
     }
 
-    // Atualiza a exibição do histórico
     function updateHistoryDisplay() {
       const historyList = document.getElementById('historyList');
       historyList.innerHTML = "";
